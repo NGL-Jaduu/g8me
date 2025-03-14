@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .choices { margin: 20px; }
+        button { font-size: 20px; padding: 10px; margin: 5px; cursor: pointer; }
+        #status, #result { font-size: 24px; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Rock Paper Scissors</h1>
+    <div id="status">Waiting for opponent...</div>
+    <div class="choices">
+        <button onclick="sendChoice('rock')">Rock</button>
+        <button onclick="sendChoice('paper')">Paper</button>
+        <button onclick="sendChoice('scissors')">Scissors</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:8080');
+        let playerNumber = null;
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'playerNumber') {
+                playerNumber = data.player;
+                document.getElementById('status').innerText = `You are Player ${playerNumber}`;
+            }
+            if (data.type === 'status') {
+                document.getElementById('status').innerText = data.message;
+            }
+            if (data.type === 'result') {
+                document.getElementById('result').innerText = data.result;
+            }
+        };
+
+        function sendChoice(choice) {
+            socket.send(JSON.stringify({ type: 'choice', choice: choice }));
+            document.getElementById('status').innerText = `You chose ${choice}. Waiting for opponent...`;
+        }
+    </script>
+</body>
+</html>
